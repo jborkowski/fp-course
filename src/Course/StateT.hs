@@ -384,8 +384,18 @@ distinctG ::
   (Integral a, Show a) =>
   List a
   -> Logger Chars (Optional (List a))
-distinctG =
-  error "todo: Course.StateT#distinctG"
+distinctG xa =
+  runOptionalT (evalT (filtering f xa) S.empty)
+  where
+    f a = StateT (\s ->
+                    OptionalT ( if a > 100
+                                then log1 (fromString ("aborting > 100: " P.++ show a)) Empty
+                                else (if even a
+                                      then log1 (fromString ("even number: " P.++ show a))
+                                      else pure
+                                     ) (Full (S.notMember a s, S.insert a s))
+                              )
+                 )
 
 onFull ::
   Applicative k =>
