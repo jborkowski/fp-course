@@ -32,7 +32,7 @@ instance (Applicative f, Applicative g) =>
 instance (Monad f, Monad g) =>
   Monad (Compose f g) where
 -- Implement the (=<<) function for a Monad instance for Compose
-  f =<< Compose g =
+  (=<<) =
     error "impossible"
 
 -- Note that the inner g is Contravariant but the outer f is
