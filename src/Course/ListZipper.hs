@@ -313,8 +313,11 @@ findRight p (ListZipper l a r) =
 moveLeftLoop ::
   ListZipper a
   -> ListZipper a
-moveLeftLoop =
-  error "todo: Course.ListZipper#moveLeftLoop"
+moveLeftLoop (ListZipper Nil x rs) =
+  let (c, l) = shiftEmpty x rs
+  in ListZipper l c Nil
+moveLeftLoop (ListZipper (h:.ls) x rs) =
+  ListZipper ls h (x:.rs)
 
 -- | Move the zipper right, or if there are no elements to the right, go to the far left.
 --
@@ -326,8 +329,14 @@ moveLeftLoop =
 moveRightLoop ::
   ListZipper a
   -> ListZipper a
-moveRightLoop =
-  error "todo: Course.ListZipper#moveRightLoop"
+moveRightLoop (ListZipper ls x Nil) =
+  let (c, r) = shiftEmpty x ls
+  in ListZipper Nil c r
+moveRightLoop (ListZipper ls x (h:.rs)) =
+  ListZipper (x:.ls) h rs
+
+shiftEmpty :: a -> List a -> (a, List a)
+shiftEmpty a = foldLeft (\(c, acc) h -> (h, c :. acc)) (a, Nil)
 
 -- | Move the zipper one position to the left.
 --
@@ -339,8 +348,10 @@ moveRightLoop =
 moveLeft ::
   ListZipper a
   -> MaybeListZipper a
-moveLeft =
-  error "todo: Course.ListZipper#moveLeft"
+moveLeft (ListZipper Nil _ _) =
+  isNotZ
+moveLeft xa =
+  isZ . moveLeftLoop $ xa
 
 -- | Move the zipper one position to the right.
 --
@@ -352,8 +363,10 @@ moveLeft =
 moveRight ::
   ListZipper a
   -> MaybeListZipper a
-moveRight =
-  error "todo: Course.ListZipper#moveRight"
+moveRight (ListZipper _ _ Nil) =
+  isNotZ
+moveRight xa =
+  isZ . moveRightLoop $ xa
 
 -- | Swap the current focus with the value to the left of focus.
 --
@@ -393,8 +406,8 @@ swapRight =
 dropLefts ::
   ListZipper a
   -> ListZipper a
-dropLefts =
-  error "todo: Course.ListZipper#dropLefts"
+dropLefts (ListZipper _ h r) =
+  ListZipper Nil h r
 
 -- | Drop all values to the right of the focus.
 --
@@ -408,8 +421,8 @@ dropLefts =
 dropRights ::
   ListZipper a
   -> ListZipper a
-dropRights =
-  error "todo: Course.ListZipper#dropRights"
+dropRights (ListZipper l h _) =
+  ListZipper l h Nil
 
 -- | Move the focus left the given number of positions. If the value is negative, move right instead.
 --
