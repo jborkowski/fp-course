@@ -69,9 +69,9 @@ instance Monad Optional where
 -- 119
 instance Monad ((->) t) where
   (=<<) ::
-    (a -> ((->) t b))
-    -> ((->) t a)
-    -> ((->) t b)
+    (a -> (->) t b)
+    -> (->) t a
+    -> (->) t b
   (=<<) f a = flip f <*> a
 
 -- | Witness that all things with (=<<) and (<$>) also have (<*>).
@@ -111,7 +111,7 @@ instance Monad ((->) t) where
   -> k a
   -> k b
 (<**>) mf ma =
-  (\f -> (\a -> f a) <$> ma) =<< mf -- or do notation
+  (<$> ma) =<< mf -- or do notation
 
 
 infixl 4 <**>

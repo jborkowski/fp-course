@@ -120,7 +120,11 @@ constantParser =
 character ::
   Parser Char
 character =
-  error "todo: Course.Parser#character"
+  P (\str ->
+       case str of
+         c:.t -> Result t c
+         s    -> UnexpectedString s
+    )
 
 -- | Parsers can map.
 -- Write a Functor instance for a @Parser@.
@@ -132,8 +136,8 @@ instance Functor Parser where
     (a -> b)
     -> Parser a
     -> Parser b
-  (<$>) =
-     error "todo: Course.Parser (<$>)#instance Parser"
+  f <$> (P p) =
+    P ((<$>) f . p)
 
 -- | Return a parser that always succeeds with the given value and consumes no input.
 --
@@ -142,8 +146,8 @@ instance Functor Parser where
 valueParser ::
   a
   -> Parser a
-valueParser =
-  error "todo: Course.Parser#valueParser"
+valueParser a =
+  P (`Result` a)
 
 -- | Return a parser that tries the first parser for a successful value.
 --
@@ -166,8 +170,13 @@ valueParser =
   Parser a
   -> Parser a
   -> Parser a
-(|||) =
-  error "todo: Course.Parser#(|||)"
+(P p) ||| (P other) =
+  P (\a -> let res = p a in
+             if isErrorResult res
+             then other a
+             else res
+        )
+
 
 infixl 3 |||
 
@@ -198,8 +207,10 @@ instance Monad Parser where
     (a -> Parser b)
     -> Parser a
     -> Parser b
-  (=<<) =
-    error "todo: Course.Parser (=<<)#instance Parser"
+  f =<< (P p) =
+    P (\i -> let resA = p i
+                 resB = onResult resA (flip $ parse . f)
+             in resB)
 
 -- | Write an Applicative functor instance for a @Parser@.
 -- /Tip:/ Use @(=<<)@.
@@ -213,8 +224,8 @@ instance Applicative Parser where
     Parser (a -> b)
     -> Parser a
     -> Parser b
-  (<*>) =
-    error "todo: Course.Parser (<*>)#instance Parser"
+  f <*> p =
+    (<$> p) =<< f
 
 -- | Return a parser that produces a character but fails if
 --
