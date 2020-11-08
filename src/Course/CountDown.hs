@@ -66,6 +66,24 @@ perms = P.foldr (P.concatMap . interleave) [[]]
 choices :: [a] -> [[a]]
 choices = P.concat . P.map perms . subs
 
+-- | rewrite choices in term of list comprehension
+choices' :: [a] -> [[a]]
+choices' [] = [[]]
+choices' ns = [c | s <- subs ns
+                 , c <- perms s]
+
+removeOne :: Eq a => a -> [a] -> [a]
+removeOne x [] = []
+removeOne x (y:ys)
+  | x == y = ys
+  | otherwise = y : removeOne ys
+
+isChoice :: Eq a => [a] -> [a] -> Bool
+isChoice [] _      = True
+isChoice (x:xs) [] = False
+isChoice (x:xs) ys =
+  P.elem x ys && isChoice xs (removeOne x ys)
+
 solution :: Expr -> [Int] -> Int -> Bool
 solution e ns n =
   P.elem (values e) (choices ns) && eval e == [n]
