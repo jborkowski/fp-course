@@ -256,7 +256,7 @@ satisfy p =
 is ::
   Char -> Parser Char
 is c =
-  satisfy (/= c)
+  satisfy (== c)
 
 -- | Return a parser that produces a character between '0' and '9' but fails if
 --
@@ -282,7 +282,6 @@ digit ::
 digit =
   satisfy isDigit
 
---
 -- | Return a parser that produces a space character but fails if
 --
 --   * The input is empty.
@@ -554,7 +553,7 @@ smokerParser =
 phoneBodyParser ::
   Parser Chars
 phoneBodyParser =
-  error "todo: Course.Parser#phoneBodyParser"
+  list (digit ||| is '-' ||| is '.')
 
 -- | Write a parser for Person.phone.
 --
@@ -576,7 +575,10 @@ phoneBodyParser =
 phoneParser ::
   Parser Chars
 phoneParser =
-  error "todo: Course.Parser#phoneParser"
+  digit >>= \p ->
+  phoneBodyParser >>= \hone ->
+  is '#' >>
+  pure (p :. hone)
 
 -- | Write a parser for Person.
 --
@@ -634,7 +636,7 @@ phoneParser =
 personParser ::
   Parser Person
 personParser =
-  error "todo: Course.Parser#personParser"
+  Person <$> ageParser <*> spaces1 *> firstNameParser <*> spaces1 *> surnameParser <*> spaces1 *> smokerParser <*> spaces1 *> phoneParser
 
 -- Make sure all the tests pass!
 
